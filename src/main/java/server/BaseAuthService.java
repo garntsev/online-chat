@@ -1,5 +1,10 @@
 package server;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +37,22 @@ public class BaseAuthService implements AuthService {
 
   public BaseAuthService() {
     entries = new ArrayList<>();
-    entries.add(new Entry("login1", "pass1", "nick1"));
-    entries.add(new Entry("login2", "pass2", "nick2"));
-    entries.add(new Entry("login3", "pass3", "nick3"));
+    readEntriesFromDb();
+  }
+
+  private void readEntriesFromDb() {
+    try {
+      Class.forName("org.sqlite.JDBC");
+      Connection connection = DriverManager.getConnection("jdbc:sqlite:client.db");
+      Statement stmt = connection.createStatement();
+      try (ResultSet rs = stmt.executeQuery("SELECT login, pass, nick FROM client")) {
+        while (rs.next()) {
+          entries.add(new Entry(rs.getString("login"), rs.getString("pass"), rs.getString("nick")));
+        }
+      }
+    } catch (ClassNotFoundException | SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   @Override

@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
@@ -69,8 +70,15 @@ public class Controller {
               socket.setSoTimeout(0);
             }
           }
-        } catch (IOException e) {
-          e.printStackTrace();
+        } catch (SocketTimeoutException ex1) {
+          mainChatArea.appendText("Socket timeout, connection closed." + "\n");
+          try {
+            socket.close();
+          } catch (IOException ex2) {
+            ex2.printStackTrace();
+          }
+        } catch (IOException ex) {
+          ex.printStackTrace();
         }
       });
       t.start();
